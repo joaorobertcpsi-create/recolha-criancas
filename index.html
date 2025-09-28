@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="pt">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Recolha Escolar</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="manifest" href="manifest.json" />
+</head>
+<body>
+  <header>
+    <h1>Recolha Escolar</h1>
+    <div id="controls">
+      <label for="daySelect">Dia: </label>
+      <select id="daySelect"></select>
+      <button id="resetBtn">Reset dia</button>
+    </div>
+  </header>
+
+  <main>
+    <section id="list">
+      <table>
+        <thead><tr><th>Hora</th><th>Aluno</th><th>Escola</th><th>Notas</th><th>Confirmar</th></tr></thead>
+        <tbody id="tbody"></tbody>
+      </table>
+    </section>
+  </main>
+
+  <footer>
+    <small>App local (PWA) – lembrete 20 min antes</small>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
