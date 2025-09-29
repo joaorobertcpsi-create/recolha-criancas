@@ -9,7 +9,9 @@ async function loadData(){
   requestNotificationPermission();
   scheduleReminders();
 }
-
+// cola isto na consola para ver o que o teu script tem
+console.log('Existem elementos children?', typeof children, children && children.length);
+console.log('Exemplo de cada pickupDate:', children && children.slice(0,5).map(c=>c.pickupDate));
 function populateDaySelect(){
   const sel=document.getElementById('daySelect');
   sel.innerHTML='';
