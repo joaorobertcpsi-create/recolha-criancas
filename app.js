@@ -1,5 +1,5 @@
 let data={students:[],routes:[]};
-const dayNames=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const dayNames=['Segunda','Terça','Quarta','Quinta','Sexta'];
 
 async function loadData(){
   const res=await fetch('data/schedule.json');
