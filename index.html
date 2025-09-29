@@ -31,6 +31,102 @@
   </footer>
 
   <script src="app.js"></script>
+  <!-- Exemplo mínimo -->
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Recolha - Teste filtro</title>
+</head>
+<body>
+  <label for="datePicker">Escolhe o dia:</label>
+  <input id="datePicker" type="date">
+
+  <ul id="list"></ul>
+
+  <script>
+    // Simula os dados (substituir pelo fetch / parser da tua tabela)
+    const children = [
+      { name: 'Ana', pickupDate: '29/09/2025' },
+      { name: 'Miguel', pickupDate: '2025-09-29' },
+      { name: 'Luisa', pickupDate: '30/09/2025' }
+    ];
+
+    // Converte strings num formato YYYY-MM-DD seguro
+    function normalizeToYMD(dateStr) {
+      if (!dateStr) return null;
+      // já está no formato ISO yyyy-mm-dd?
+      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+      // dd/mm/yyyy -> yyyy-mm-dd
+      const m = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
+      if (m) {
+        return `${m[3]}-${m[2]}-${m[1]}`;
+      }
+      // tenta Date fallback (último recurso)
+      const d = new Date(dateStr);
+      if (!isNaN(d.valueOf())) {
+        const y = d.getFullYear();
+        const mm = String(d.getMonth()+1).padStart(2,'0');
+        const dd = String(d.getDate()).padStart(2,'0');
+        return `${y}-${mm}-${dd}`;
+      }
+      return null;
+    }
+
+    // Normaliza o array (fazer isto logo que os dados sejam lidos)
+    function prepareChildren(rawChildren){
+      return rawChildren.map(c => {
+        return {
+          ...c,
+          pickupYMD: normalizeToYMD(c.pickupDate)
+        };
+      });
+    }
+
+    const prepared = prepareChildren(children);
+    console.log('prepared children:', prepared); // DEBUG
+
+    const datePicker = document.getElementById('datePicker');
+    const list = document.getElementById('list');
+
+    // Preenche lista baseado numa data selecionada
+    function filterAndRender(selectedYMD) {
+      list.innerHTML = '';
+      if (!selectedYMD) {
+        list.innerHTML = '<li>Escolhe um dia</li>';
+        return;
+      }
+      const matched = prepared.filter(c => c.pickupYMD === selectedYMD);
+      console.log('filtrou para', selectedYMD, '=>', matched); // DEBUG
+      if (matched.length === 0) {
+        list.innerHTML = '<li>Nenhuma criança encontrada para este dia.</li>';
+        return;
+      }
+      matched.forEach(c => {
+        const li = document.createElement('li');
+        li.textContent = `${c.name} — ${c.pickupYMD}`;
+        list.appendChild(li);
+      });
+    }
+
+    // Quando o input date muda
+    datePicker.addEventListener('change', (e) => {
+      // input type=date já dá yyyy-mm-dd
+      const val = e.target.value; // YYYY-MM-DD
+      filterAndRender(val);
+    });
+
+    // Se quiseres já pré-selecionar hoje:
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth()+1).padStart(2,'0');
+    const d = String(today.getDate()).padStart(2,'0');
+    datePicker.value = `${y}-${m}-${d}`;
+    filterAndRender(datePicker.value);
+
+  </script>
+</body>
+</html>
   
 </body>
 </html>
