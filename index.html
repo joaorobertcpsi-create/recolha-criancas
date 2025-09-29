@@ -31,31 +31,6 @@
   </footer>
 
   <script src="app.js"></script>
-  // Função para obter o dia da semana atual em português
-function diaDaSemanaHoje() {
-  const dias = ["Domingo", "Segunda", "Terça", "Quarta", "Quinta", "Sexta", "Sábado"];
-  const hoje = new Date();
-  return dias[hoje.getDay()];
-}
-
-// Exemplo da tua tabela de crianças
-const criancas = [
-  { nome: "João", dia: "Segunda" },
-  { nome: "Maria", dia: "Terça" },
-  { nome: "Pedro", dia: "Segunda" },
-  { nome: "Inês", dia: "Quarta" }
-];
-
-// Filtrar só as crianças do dia de hoje
-const hoje = diaDaSemanaHoje();
-const listaHoje = criancas.filter(c => c.dia === hoje);
-
-// Mostrar no ecrã (exemplo)
-if (listaHoje.length === 0) {
-  console.log("Hoje não há recolhas.");
-} else {
-  console.log("Crianças para recolher hoje (" + hoje + "):");
-  listaHoje.forEach(c => console.log("- " + c.nome));
-}
+  
 </body>
 </html>
