@@ -1,9 +1,14 @@
+
 {
-  "name": "Recolha Escolar",
+  "name": "Recolha de Crianças",
   "short_name": "Recolha",
   "start_url": "index.html",
   "display": "standalone",
   "background_color": "#ffffff",
-  "theme_color": "#036",
-  "icons": []
+  "theme_color": "#007bff",
+  "icons": [{
+    "src": "icon-192.png",
+    "sizes": "192x192",
+    "type": "image/png"
+  }]
 }

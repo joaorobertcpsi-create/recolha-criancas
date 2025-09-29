@@ -1,132 +1,87 @@
-<!doctype html>
+
+<!DOCTYPE html>
 <html lang="pt">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Recolha Escolar</title>
-  <link rel="stylesheet" href="styles.css" />
-  <link rel="manifest" href="manifest.json" />
+  <meta charset="UTF-8">
+  <title>Recolha de Crianças - João Paulo</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="manifest" href="manifest.json">
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    ul { list-style: none; padding: 0; }
+    li { padding: 5px 0; }
+    .present { color: green; font-weight: bold; }
+  </style>
 </head>
 <body>
-  <header>
-    <h1>Recolha Escolar</h1>
-    <div id="controls">
-      <label for="daySelect">Dia: </label>
-      <select id="daySelect"></select>
-      <button id="resetBtn">Reset dia</button>
-    </div>
-  </header>
+  <h2>Recolha de Crianças - João Paulo</h2>
+  <label>Escolhe o dia:</label>
+  <input type="date" id="datePicker"><br><br>
 
-  <main>
-    <section id="list">
-      <table>
-        <thead><tr><th>Hora</th><th>Aluno</th><th>Escola</th><th>Notas</th><th>Confirmar</th></tr></thead>
-        <tbody id="tbody"></tbody>
-      </table>
-    </section>
-  </main>
-
-  <footer>
-    <small>App local (PWA) – lembrete 20 min antes</small>
-  </footer>
-
-  <script src="app.js"></script>
-  <!-- Exemplo mínimo -->
-<!doctype html>
-<html>
-<head>
-  <meta charset="utf-8">
-  <title>Recolha - Teste filtro</title>
-</head>
-<body>
-  <label for="datePicker">Escolhe o dia:</label>
-  <input id="datePicker" type="date">
+  <label>Carregar PDFs/TXT:</label>
+  <input type="file" id="pdfInput" multiple accept=".txt,.json"><br><br>
 
   <ul id="list"></ul>
 
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.107/pdf.min.js"></script>
   <script>
-    // Simula os dados (substituir pelo fetch / parser da tua tabela)
-    const children = [
-      { name: 'Ana', pickupDate: '29/09/2025' },
-      { name: 'Miguel', pickupDate: '2025-09-29' },
-      { name: 'Luisa', pickupDate: '30/09/2025' }
-    ];
-
-    // Converte strings num formato YYYY-MM-DD seguro
-    function normalizeToYMD(dateStr) {
-      if (!dateStr) return null;
-      // já está no formato ISO yyyy-mm-dd?
-      if (/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
-      // dd/mm/yyyy -> yyyy-mm-dd
-      const m = dateStr.match(/^(\d{2})\/(\d{2})\/(\d{4})$/);
-      if (m) {
-        return `${m[3]}-${m[2]}-${m[1]}`;
-      }
-      // tenta Date fallback (último recurso)
-      const d = new Date(dateStr);
-      if (!isNaN(d.valueOf())) {
-        const y = d.getFullYear();
-        const mm = String(d.getMonth()+1).padStart(2,'0');
-        const dd = String(d.getDate()).padStart(2,'0');
-        return `${y}-${mm}-${dd}`;
-      }
-      return null;
-    }
-
-    // Normaliza o array (fazer isto logo que os dados sejam lidos)
-    function prepareChildren(rawChildren){
-      return rawChildren.map(c => {
-        return {
-          ...c,
-          pickupYMD: normalizeToYMD(c.pickupDate)
-        };
-      });
-    }
-
-    const prepared = prepareChildren(children);
-    console.log('prepared children:', prepared); // DEBUG
-
     const datePicker = document.getElementById('datePicker');
     const list = document.getElementById('list');
+    const pdfInput = document.getElementById('pdfInput');
+    const nomeProcurado = "João Paulo";
+    let allChildren = [];
 
-    // Preenche lista baseado numa data selecionada
-    function filterAndRender(selectedYMD) {
+    function normalizeDate(dateStr) {
+      const parts = dateStr.split('/');
+      if(parts.length === 3) return `${parts[2]}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+      return dateStr;
+    }
+
+    function renderList(selectedYMD) {
       list.innerHTML = '';
       if (!selectedYMD) {
         list.innerHTML = '<li>Escolhe um dia</li>';
         return;
       }
-      const matched = prepared.filter(c => c.pickupYMD === selectedYMD);
-      console.log('filtrou para', selectedYMD, '=>', matched); // DEBUG
-      if (matched.length === 0) {
+      const matched = allChildren.filter(c => c.pickupYMD === selectedYMD && c.name.includes(nomeProcurado));
+      if(matched.length === 0) {
         list.innerHTML = '<li>Nenhuma criança encontrada para este dia.</li>';
         return;
       }
-      matched.forEach(c => {
+      matched.forEach((c, i) => {
         const li = document.createElement('li');
-        li.textContent = `${c.name} — ${c.pickupYMD}`;
+        li.textContent = `${c.name} — ${c.pickupYMD} — ${c.time || ''}`;
+        const btn = document.createElement('button');
+        btn.textContent = 'Presente';
+        btn.addEventListener('click', () => li.classList.toggle('present'));
+        li.appendChild(btn);
         list.appendChild(li);
       });
     }
 
-    // Quando o input date muda
-    datePicker.addEventListener('change', (e) => {
-      // input type=date já dá yyyy-mm-dd
-      const val = e.target.value; // YYYY-MM-DD
-      filterAndRender(val);
+    datePicker.addEventListener('change', e => renderList(e.target.value));
+
+    pdfInput.addEventListener('change', async e => {
+      allChildren = [];
+      for (const file of e.target.files) {
+        const text = await file.text();
+        const lines = text.split('\n');
+        lines.forEach(line => {
+          const parts = line.split(';');
+          if(parts.length >= 2) {
+            allChildren.push({
+              name: parts[0].trim(),
+              pickupYMD: normalizeDate(parts[1].trim()),
+              time: parts[2] ? parts[2].trim() : ''
+            });
+          }
+        });
+      }
+      if(datePicker.value) renderList(datePicker.value);
     });
 
-    // Se quiseres já pré-selecionar hoje:
     const today = new Date();
-    const y = today.getFullYear();
-    const m = String(today.getMonth()+1).padStart(2,'0');
-    const d = String(today.getDate()).padStart(2,'0');
-    datePicker.value = `${y}-${m}-${d}`;
-    filterAndRender(datePicker.value);
-
+    datePicker.value = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
   </script>
-</body>
-</html>
-  
 </body>
 </html>
